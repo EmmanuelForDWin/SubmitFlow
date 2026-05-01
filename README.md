@@ -1,6 +1,6 @@
 # SubmitFlow
 
-A production AI agent that automates document intake for independent insurance agencies. Built on the Anthropic Claude API.
+A production AI agent that automates document intake for MGAs and wholesale brokers. Built on the Anthropic Claude API.
 
 ## What it does
 
