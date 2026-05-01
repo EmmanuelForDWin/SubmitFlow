@@ -31,7 +31,8 @@ Audit log + monitoring
 - **Confidence scoring per field.** Low-confidence fields route to human review instead of silently failing.
 - **Reusable prompt framework.** Prompts are templated and version-controlled, not hardcoded.
 - **Reliability patterns.** Retry with exponential backoff, rate limiting, dead-letter recovery, audit logging.
-- **PII handling.** Sensitive data is logged with care and bounded by access controls.
+- **PII handling.** 3-layer redaction (SSN, FEIN, name, DL, CC) before any data hits logs or output. Source tracing on every extracted field for audit defensibility. Built for delegated authority audits, NAIC AI Model Bulletin compliance, and E&O carrier diligence.
+- 
 - **Always-on deployment.** Runs as a 24/7 worker process on Railway.
 
 ## Tech stack
