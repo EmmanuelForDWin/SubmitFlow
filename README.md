@@ -51,4 +51,4 @@ In production. Currently being piloted with independent insurance agencies. Iter
 
 ## Built by
 
-Emmanuel Odetola, AI builder, MBA in Business Analytics, former Honda Financial Services Business Analyst. Based in Dallas, TX.
+Emmanuel Odetola, AI builder, MBA in Business Analytics. Based in Dallas, TX.
