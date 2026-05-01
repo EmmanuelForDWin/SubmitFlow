@@ -32,7 +32,7 @@ Audit log + monitoring
 - **Reusable prompt framework.** Prompts are templated and version-controlled, not hardcoded.
 - **Reliability patterns.** Retry with exponential backoff, rate limiting, dead-letter recovery, audit logging.
 - **PII handling.** 3-layer redaction (SSN, FEIN, name, DL, CC) before any data hits logs or output. Source tracing on every extracted field for audit defensibility. Built for delegated authority audits, NAIC AI Model Bulletin compliance, and E&O carrier diligence.
-- - **NAIC AI Model Bulletin compliance package.** Per-client governance documentation, vendor risk assessment, DPA, and audit trail generation. Built for the 24+ states that have adopted the bulletin and the regulators who actually ask for evidence.
+-  **NAIC AI Model Bulletin compliance package.** Per-client governance documentation, vendor risk assessment, DPA, and audit trail generation. Built for the 24+ states that have adopted the bulletin and the regulators who actually ask for evidence.
 - **Always-on deployment.** Runs as a 24/7 worker process on Railway.
 
 ## Tech stack
