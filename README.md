@@ -47,7 +47,7 @@ Audit log + monitoring
 
 ## Status
 
-In production. Currently being piloted with independent insurance agencies. Iterating on accuracy, edge case handling, and expansion to additional document types based on operational feedback.
+Production-ready. In active outreach to MGAs and wholesale brokers. First pilots targeting Q2 2026.
 
 ## Built by
 
