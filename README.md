@@ -1,55 +1,67 @@
 # SubmitFlow
 
-A production AI agent that automates document intake for MGAs and wholesale brokers. Built on the Anthropic Claude API.
+Production AI agent for submission intake at independent Property & Casualty insurance agencies. Reads ACORD forms, dec pages, and loss runs out of an inbox. Outputs a prefilled Excel workbook to the CSR before they expected to start triaging.
+
+Built and operated solo. Anthropic Claude API. Python. Deployed to Railway.
 
 ## What it does
 
-SubmitFlow takes inbound submission documents (typically PDFs sent via email), classifies them, extracts structured data with confidence scoring, and routes the output to the right destination with human review built in for low-confidence cases.
+A submission email lands in an agency's monitored inbox. SubmitFlow:
 
-The goal: replace the manual intake work that agencies do every day, accurately enough to trust in production, with guardrails for the cases where AI shouldn't be trusted alone.
+1. Classifies the email (new business, renewal, COI request, marketing noise)
+2. Parses every attached PDF — pdfplumber for native text, Claude Vision for scans
+3. Extracts structured data with source tracing back to the page and section
+4. Flags conflicts between documents and low-confidence fields
+5. Generates an AMS-formatted Excel workbook (Applied Epic, AMS360, HawkSoft, or generic)
+6. Sends the workbook to the CSR with a confirmation request
+7. Watches for the reply, parses corrections, updates status, logs the audit trail
+
+Human-in-the-loop on every submission. Zero fabrication. Missing fields are null, never guessed.
 
 ## Architecture
-Inbound Email (IMAP)
-↓
-Document Parser (pdfplumber for text PDFs, Claude Vision API for scans)
-↓
-Anthropic Claude API (Sonnet 4.6) — extraction, classification, confidence scoring
-↓
-Validation Layer — JSON schema enforcement, confidence thresholds
-↓
-┌────────────────────────────┐
-│  High confidence outputs   │ → Structured Excel (openpyxl) → Outbound delivery (Resend)
-└────────────────────────────┘
-┌────────────────────────────┐
-│  Low confidence outputs    │ → Human-in-the-loop review queue
-└────────────────────────────┘
-↓
-Audit log + monitoring
-## Key features
 
-- **Two-pass extraction.** Text-first extraction via pdfplumber for native PDFs, Claude Vision API fallback for scans. Cheaper and more accurate when text is extractable.
-- **Confidence scoring per field.** Low-confidence fields route to human review instead of silently failing.
-- **Reusable prompt framework.** Prompts are templated and version-controlled, not hardcoded.
-- **Reliability patterns.** Retry with exponential backoff, rate limiting, dead-letter recovery, audit logging.
-- **PII handling.** 3-layer redaction (SSN, FEIN, name, DL, CC) before any data hits logs or output. Source tracing on every extracted field for audit defensibility. Built for delegated authority audits, NAIC AI Model Bulletin compliance, and E&O carrier diligence.
--  **NAIC AI Model Bulletin compliance package.** Per-client governance documentation, vendor risk assessment, DPA, and audit trail generation. Built for the 24+ states that have adopted the bulletin and the regulators who actually ask for evidence.
-- **Always-on deployment.** Runs as a 24/7 worker process on Railway.
+```
+Inbound IMAP → Pre-classification filter → Claude classifier
+                                                ↓
+                  Document parser (pdfplumber + Claude Vision)
+                                                ↓
+                  Field extraction + source tracing + PII redaction
+                                                ↓
+                  Conflict detection + confidence scoring
+                                                ↓
+                  AMS-specific Excel writer (openpyxl)
+                                                ↓
+                  Resend HTTP transport → CSR inbox
+                                                ↓
+                  Reply monitor → confirmation parser → audit log
+```
+
+## Design decisions worth noting
+
+- **Two-pass extraction.** Text first, vision fallback. Most ACORDs are native PDFs and pdfplumber is faster and cheaper than Vision. Vision only fires when text extraction returns below a quality threshold.
+- **Source tracing on every field.** Document name, page number, section. Required for compliance defensibility and for the CSR to verify questionable fields in under 30 seconds.
+- **Per-client isolation.** One client's failure cannot affect another. Per-client try/except in the main loop, per-client config, per-client API budget.
+- **Resend over SMTP.** Railway blocks outbound SMTP. Resend HTTP transport is primary, SMTP is fallback for local dev only.
+- **Persistent state on disk, not in a queue broker.** JSON files handle dedup, HITL state, and audit logs at this scale. Redis and SQS are deferred until they actually solve a problem.
+- **No agent framework.** Considered the Claude Agent SDK and rejected it. Autonomous tool selection breaks the auditability requirement for regulated workflows.
 
 ## Tech stack
 
-- **Language:** Python 3.13
-- **AI:** Anthropic Claude API (Sonnet 4.6 + Vision)
-- **Document processing:** pdfplumber, Claude Vision API
-- **Output:** openpyxl for structured Excel
-- **Email:** IMAP (inbound), Resend API (outbound)
-- **Deployment:** Railway (24/7 worker)
-- **Version control:** Git, GitHub
-- **AI-assisted development:** Claude Code
+- Python 3.13
+- Anthropic Claude API (Sonnet 4.6, text and vision)
+- pdfplumber, pdf2image, Pillow, pytesseract
+- openpyxl
+- Native Python imaplib for inbound, Resend HTTP API for outbound
+- Railway for deployment
 
-## Status
+## Compliance
 
-Production-ready. In active outreach to MGAs and wholesale brokers. First pilots targeting Q2 2026.
+Every client deployment includes a governance package: data processing agreement, AI system description, vendor risk assessment, audit trail. Sized for state insurance department market conduct examinations. More than half of US states have adopted the NAIC AI Model Bulletin or substantially similar guidance, and the NAIC AI Systems Evaluation Tool entered multistate pilot in January 2026.
+
+## Repo status
+
+Production code is private. This repo documents architecture and design. For technical discussion or walkthrough, reach out.
 
 ## Built by
 
-Emmanuel Odetola, AI builder, MBA in Business Analytics. Based in Dallas, TX.
+Emmanuel Odetola. MBA Business Analytics. Based in DFW.
